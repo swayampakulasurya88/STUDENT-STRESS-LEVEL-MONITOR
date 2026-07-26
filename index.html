@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calm Compass · Student Stress Level Monitor</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%237C3AED'/%3E%3Cstop offset='55%25' stop-color='%23F43F5E'/%3E%3Cstop offset='100%25' stop-color='%23FBBF24'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='30' fill='url(%23g)'/%3E%3Ccircle cx='32' cy='32' r='23' fill='none' stroke='white' stroke-opacity='0.5' stroke-width='1.5'/%3E%3Cpath d='M32 10 L36 28 L54 32 L36 36 L32 54 L28 36 L10 32 L28 28 Z' fill='white'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%231B1330'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div class="ambient-bg" aria-hidden="true">
+  <div class="mesh"></div>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <div class="blob b4"></div>
+  <div class="blob b5"></div>
+  <div class="blob b6"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div>
+  <div class="vignette"></div>
+</div>
+
+<!-- ============ NAVBAR ============ -->
+<nav class="navbar navbar-cc py-2">
+  <div class="container d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2" style="cursor:pointer" onclick="Router.go('landing')">
+      <span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="text-white" aria-hidden="true"><path d="M12 2 L14.3 9.7 L22 12 L14.3 14.3 L12 22 L9.7 14.3 L2 12 L9.7 9.7 Z"/></svg></span>
+      <span class="brand-text">Calm Compass</span>
+    </div>
+    <div id="navRight" class="d-flex align-items-center gap-2"></div>
+  </div>
+</nav>
+
+<div id="main-content" tabindex="-1">
+<!-- ============ LANDING ============ -->
+<section id="view-landing" class="view">
+  <div class="hero">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+          <span class="eyebrow-badge"><i class="fa-solid fa-heart-pulse"></i> Student wellbeing, made visible</span>
+          <h1 class="mt-3 mb-3">Notice <span class="grad-text">the pressure</span> before it becomes a problem.</h1>
+          <p class="lead-cc">Calm Compass turns a short weekly check-in into a clear, honest picture of how a student is really doing — so counselors can step in early, and students never feel like just a number.</p>
+          <div class="d-flex gap-3 mt-4 flex-wrap">
+            <button class="btn-cc-primary" onclick="Router.go('register')">Start as a Student <i class="fa-solid fa-arrow-right ms-1"></i></button>
+            <button class="btn-cc-outline" onclick="Router.go('login')">Log in</button>
+          </div>
+          <div class="d-flex gap-4 mt-4 flex-wrap">
+            <div><div class="fw-bold font-mono">20</div><div class="small text-muted">check-in questions, 5 wellbeing areas</div></div>
+            <div><div class="fw-bold font-mono">3</div><div class="small text-muted">roles: student, teacher, admin</div></div>
+            <div><div class="fw-bold font-mono">100%</div><div class="small text-muted">private by default</div></div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="ring-wrap">
+            <div class="breath-ring r2"></div>
+            <div class="breath-ring r3"></div>
+            <div class="ring-core">
+              <div class="num">32</div>
+              <div class="lbl">Moderate stress</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Introduction -->
+  <div class="section-pad">
+    <div class="container">
+      <h2 class="section-title">What Calm Compass actually does</h2>
+      <p class="section-sub mb-4">It's a simple loop: a student answers a short questionnaire, the system scores it honestly, and the right person sees the result in time to help.</p>
+      <div class="row g-4">
+        <div class="col-md-4"><div class="card-cc"><div class="icon-tile"><i class="fa-solid fa-clipboard-list"></i></div><h5>Check in weekly</h5><p class="text-muted mb-0 small">A 20-question assessment covering sleep, workload, focus, and mood — takes under 5 minutes.</p></div></div>
+        <div class="col-md-4"><div class="card-cc"><div class="icon-tile"><i class="fa-solid fa-gauge-high"></i></div><h5>See the score, not a guess</h5><p class="text-muted mb-0 small">Every response is scored into Low, Moderate, High, or Very High stress, with a plain-language reason why.</p></div></div>
+        <div class="col-md-4"><div class="card-cc"><div class="icon-tile"><i class="fa-solid fa-hand-holding-heart"></i></div><h5>Get a next step</h5><p class="text-muted mb-0 small">Recommendations and counselor notes arrive on the same dashboard — never buried in an inbox.</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="section-pad bg-soft-alt">
+    <div class="container">
+      <div class="row g-5">
+        <div class="col-lg-5">
+          <h2 class="section-title">How it works</h2>
+          <p class="section-sub">Three roles, one shared picture.</p>
+        </div>
+        <div class="col-lg-7">
+          <div class="step-row"><div class="step-index">01</div><div><strong>Student registers &amp; checks in.</strong><div class="text-muted small">Takes the assessment; sees their own score, history, and recommendations instantly.</div></div></div>
+          <div class="step-row"><div class="step-index">02</div><div><strong>Teacher monitors the cohort.</strong><div class="text-muted small">Spots students trending toward High or Very High stress and sends guidance directly.</div></div></div>
+          <div class="step-row"><div class="step-index">03</div><div><strong>Admin keeps the system healthy.</strong><div class="text-muted small">Manages accounts, departments, the question bank, and pulls department-wide reports.</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Benefits -->
+  <div class="section-pad">
+    <div class="container">
+      <h2 class="section-title">Why it's worth five minutes a week</h2>
+      <div class="row g-4 mt-1">
+        <div class="col-md-3 col-6"><div class="card-cc text-center"><i class="fa-solid fa-eye fa-lg mb-2" style="color:var(--primary)"></i><div class="fw-bold small">Early visibility</div></div></div>
+        <div class="col-md-3 col-6"><div class="card-cc text-center"><i class="fa-solid fa-lock fa-lg mb-2" style="color:var(--primary)"></i><div class="fw-bold small">Private &amp; role-based</div></div></div>
+        <div class="col-md-3 col-6"><div class="card-cc text-center"><i class="fa-solid fa-chart-line fa-lg mb-2" style="color:var(--primary)"></i><div class="fw-bold small">Trends over time</div></div></div>
+        <div class="col-md-3 col-6"><div class="card-cc text-center"><i class="fa-solid fa-comments fa-lg mb-2" style="color:var(--primary)"></i><div class="fw-bold small">Direct counselor notes</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- About mental health -->
+  <div class="section-pad bg-soft-alt">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+          <h2 class="section-title">About student mental health</h2>
+          <p class="text-muted">Academic stress builds quietly — a missed night of sleep, a stretch of assignments, a quiet withdrawal from friends. None of it looks urgent on its own. Calm Compass exists to notice the pattern, not just the moment, and to make sure a rising trend reaches a real person before it becomes a crisis.</p>
+          <p class="text-muted small mb-0">This tool supports awareness and early conversation. It is not a diagnostic or clinical instrument, and it doesn't replace a counselor, doctor, or mental health professional.</p>
+        </div>
+        <div class="col-lg-6">
+          <div class="card-cc">
+            <h6 class="fw-bold">If you or someone you know is struggling</h6>
+            <p class="small text-muted mb-1">Reach out to your institution's counseling cell or a trusted mental health professional. In an emergency, contact local emergency services immediately.</p>
+            <a href="#" class="small fw-bold" onclick="Router.go('about');return false;">More on what this tool is (and isn't) <i class="fa-solid fa-arrow-right ms-1" aria-hidden="true"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact -->
+  <div class="section-pad">
+    <div class="container">
+      <div class="contact-strip">
+        <h3 class="font-display mb-2">Bring Calm Compass to your institution</h3>
+        <p class="mb-3" style="color:#d9d7f5;">Questions about setup, data, or a pilot rollout? We're glad to walk through it.</p>
+        <a href="#" id="contactEmailLink" class="btn-cc-primary text-decoration-none" style="background:#fff; color:var(--primary-deep);"></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LOGIN ============ -->
+<section id="view-login" class="view">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-side">
+        <span class="brand-mark" style="background:#fff;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color:var(--primary)" aria-hidden="true"><path d="M12 2 L14.3 9.7 L22 12 L14.3 14.3 L12 22 L9.7 14.3 L2 12 L9.7 9.7 Z"/></svg></span>
+        <h3 class="font-display">Welcome back.</h3>
+        <p style="color:#e7e5ff;">Log in to check in, review trends, or manage your cohort — whichever seat you sit in.</p>
+      </div>
+      <div class="auth-form-side">
+        <h4 class="font-display mb-3">Log in</h4>
+        <div class="role-tabs">
+          <div class="role-tab active" data-role="student" onclick="Auth.setLoginRole('student',this)">Student</div>
+          <div class="role-tab" data-role="teacher" onclick="Auth.setLoginRole('teacher',this)">Teacher</div>
+          <div class="role-tab" data-role="admin" onclick="Auth.setLoginRole('admin',this)">Admin</div>
+        </div>
+        <form onsubmit="return Auth.login(event)">
+          <div class="mb-3">
+            <label class="form-label small fw-bold" id="loginIdLabel">Student ID or Email</label>
+            <input class="form-control form-control-cc" id="loginId" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Password</label>
+            <input type="password" class="form-control form-control-cc" id="loginPw" required>
+          </div>
+          <div class="text-end mb-2">
+            <a href="#" class="small" onclick="ForgotFlow.open();return false;">Forgot password?</a>
+          </div>
+          <div id="loginError" class="text-danger small mb-2"></div>
+          <button class="btn-cc-primary w-100" type="submit">Log in <i class="fa-solid fa-arrow-right-to-bracket ms-1"></i></button>
+        </form>
+        <p class="small text-muted mt-3 mb-0">No account? <a href="#" onclick="Router.go('register');return false;">Register as a student</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REGISTER ============ -->
+<section id="view-register" class="view">
+  <div class="auth-wrap">
+    <div class="auth-card" style="max-width:1080px;">
+      <div class="auth-side">
+        <span class="brand-mark" style="background:#fff;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color:var(--primary)" aria-hidden="true"><path d="M12 2 L14.3 9.7 L22 12 L14.3 14.3 L12 22 L9.7 14.3 L2 12 L9.7 9.7 Z"/></svg></span>
+        <h3 class="font-display">Five minutes now, clarity all semester.</h3>
+        <p style="color:#e7e5ff;">Create your student account to start tracking how you're really doing.</p>
+      </div>
+      <div class="auth-form-side">
+        <h4 class="font-display mb-3">Student registration</h4>
+        <form onsubmit="return Auth.register(event)">
+          <div class="row g-2">
+            <div class="col-md-6"><label class="form-label small fw-bold">Student ID</label><input class="form-control form-control-cc" id="regStudentId" required></div>
+            <div class="col-md-6"><label class="form-label small fw-bold">Full name</label><input class="form-control form-control-cc" id="regName" required></div>
+            <div class="col-md-6"><label class="form-label small fw-bold">Email</label><input type="email" class="form-control form-control-cc" id="regEmail" required></div>
+            <div class="col-md-6"><label class="form-label small fw-bold">Mobile number</label><input class="form-control form-control-cc" id="regMobile" required pattern="[0-9]{10}" title="10 digit mobile number"></div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Gender</label>
+              <select class="form-select form-select-cc" id="regGender" required>
+                <option value="">Select</option><option>Female</option><option>Male</option><option>Non-binary</option><option>Prefer not to say</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Department</label>
+              <select class="form-select form-select-cc" id="regDept" required></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Year</label>
+              <select class="form-select form-select-cc" id="regYear" required>
+                <option value="">Select</option><option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option>
+              </select>
+            </div>
+            <div class="col-md-6"><label class="form-label small fw-bold">Section</label><input class="form-control form-control-cc" id="regSection" required></div>
+            <div class="col-md-6"><label class="form-label small fw-bold">Password</label><input type="password" class="form-control form-control-cc" id="regPw" minlength="6" required></div>
+            <div class="col-md-6"><label class="form-label small fw-bold">Confirm password</label><input type="password" class="form-control form-control-cc" id="regPw2" minlength="6" required></div>
+          </div>
+          <div class="consent-box mt-3 d-flex gap-2 align-items-start">
+            <input type="checkbox" id="regConsent" required style="margin-top:.3rem;">
+            <label for="regConsent" class="small mb-0">
+              I've read and agree to how my data is collected and used —
+              <a href="#" onclick="Router.go('privacy');return false;">Privacy &amp; Data Use</a>.
+            </label>
+          </div>
+          <div id="regError" class="text-danger small mt-2"></div>
+          <button class="btn-cc-primary w-100 mt-3" type="submit">Create account</button>
+        </form>
+        <p class="small text-muted mt-3 mb-0">Already registered? <a href="#" onclick="Router.go('login');return false;">Log in</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FORGOT PASSWORD (OTP) ============ -->
+<section id="view-forgot" class="view">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-side">
+        <span class="brand-mark" style="background:#fff;"><i class="fa-solid fa-key" style="color:var(--primary)"></i></span>
+        <h3 class="font-display">Locked out? Let's fix that.</h3>
+        <p style="color:#e7e5ff;">Verify who you are with a one-time code, then set a fresh password.</p>
+      </div>
+      <div class="auth-form-side">
+        <h4 class="font-display mb-3">Reset your password</h4>
+
+        <!-- Step indicator -->
+        <div class="d-flex align-items-center gap-2 mb-4 small text-muted" id="forgotSteps">
+          <span class="fw-bold" id="fstep1lbl" style="color:var(--primary-deep)">1. Identify</span>
+          <span>›</span><span id="fstep2lbl">2. Verify OTP</span>
+          <span>›</span><span id="fstep3lbl">3. New password</span>
+        </div>
+
+        <!-- Step 1 -->
+        <div id="forgotStep1">
+          <div class="role-tabs">
+            <div class="role-tab active" data-role="student" onclick="ForgotFlow.setRole('student',this)">Student</div>
+            <div class="role-tab" data-role="teacher" onclick="ForgotFlow.setRole('teacher',this)">Teacher</div>
+            <div class="role-tab" data-role="admin" onclick="ForgotFlow.setRole('admin',this)">Admin</div>
+          </div>
+          <label class="form-label small fw-bold" id="forgotIdLabel">Student ID or Email</label>
+          <input class="form-control form-control-cc mb-2" id="forgotId" placeholder="Enter your ID / email / username">
+          <div id="forgotError1" class="text-danger small mb-2"></div>
+          <button class="btn-cc-primary w-100" onclick="ForgotFlow.sendOtp()">Send OTP <i class="fa-solid fa-paper-plane ms-1"></i></button>
+        </div>
+
+        <!-- Step 2 -->
+        <div id="forgotStep2" style="display:none;">
+          <div class="quote-banner mb-3" id="otpDisplayBox" style="font-style:normal;"></div>
+          <label class="form-label small fw-bold">Enter the 6-digit OTP</label>
+          <input class="form-control form-control-cc mb-2 font-mono" id="forgotOtpInput" maxlength="6" placeholder="000000">
+          <div id="forgotError2" class="text-danger small mb-2"></div>
+          <div class="d-flex gap-2">
+            <button class="btn-cc-primary w-100" onclick="ForgotFlow.verifyOtp()">Verify OTP</button>
+            <button class="btn-cc-outline" onclick="ForgotFlow.sendOtp(true)">Resend</button>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div id="forgotStep3" style="display:none;">
+          <label class="form-label small fw-bold">New password</label>
+          <input type="password" class="form-control form-control-cc mb-2" id="forgotNewPw" minlength="6">
+          <label class="form-label small fw-bold">Confirm new password</label>
+          <input type="password" class="form-control form-control-cc mb-2" id="forgotNewPw2" minlength="6">
+          <div id="forgotError3" class="text-danger small mb-2"></div>
+          <button class="btn-cc-primary w-100" onclick="ForgotFlow.resetPassword()">Reset password</button>
+        </div>
+
+        <p class="small text-muted mt-3 mb-0"><a href="#" onclick="Router.go('login');return false;">Back to login</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STUDENT APP ============ -->
+<section id="view-student" class="view">
+  <div class="app-shell">
+    <aside class="sidebar-cc">
+      <div class="side-link active" data-tab="s-dash" onclick="StudentUI.tab('s-dash',this)"><i class="fa-solid fa-gauge"></i> Dashboard</div>
+      <div class="side-link" data-tab="s-assess" onclick="StudentUI.tab('s-assess',this)"><i class="fa-solid fa-clipboard-check"></i> Start Assessment</div>
+      <div class="side-link" data-tab="s-history" onclick="StudentUI.tab('s-history',this)"><i class="fa-solid fa-clock-rotate-left"></i> History</div>
+      <div class="side-link" data-tab="s-recs" onclick="StudentUI.tab('s-recs',this)"><i class="fa-solid fa-comment-medical"></i> Recommendations</div>
+      <div class="side-link" data-tab="s-profile" onclick="StudentUI.tab('s-profile',this)"><i class="fa-solid fa-user"></i> Profile</div>
+      <hr style="border-color:var(--mist);">
+      <div class="side-link" data-tab="s-subjects" onclick="StudentUI.tab('s-subjects',this)"><i class="fa-solid fa-graduation-cap"></i> Subjects Used</div>
+    </aside>
+    <main class="main-content">
+      <div id="s-dash" class="stab"></div>
+      <div id="s-assess" class="stab" style="display:none;"></div>
+      <div id="s-history" class="stab" style="display:none;"></div>
+      <div id="s-result" class="stab" style="display:none;"></div>
+      <div id="s-recs" class="stab" style="display:none;"></div>
+      <div id="s-profile" class="stab" style="display:none;"></div>
+      <div id="s-subjects" class="stab" style="display:none;"></div>
+    </main>
+  </div>
+</section>
+
+<!-- ============ TEACHER APP ============ -->
+<section id="view-teacher" class="view">
+  <div class="app-shell">
+    <aside class="sidebar-cc">
+      <div class="side-link active" data-tab="t-dash" onclick="TeacherUI.tab('t-dash',this)"><i class="fa-solid fa-gauge"></i> Dashboard</div>
+      <div class="side-link" data-tab="t-students" onclick="TeacherUI.tab('t-students',this)"><i class="fa-solid fa-users"></i> Students</div>
+      <div class="side-link" data-tab="t-student-detail" onclick="TeacherUI.tab('t-student-detail',this)" style="display:none;"><i class="fa-solid fa-user-magnifying-glass"></i> Student detail</div>
+      <hr style="border-color:var(--mist);">
+      <div class="side-link" data-tab="t-subjects" onclick="TeacherUI.tab('t-subjects',this)"><i class="fa-solid fa-graduation-cap"></i> Subjects Used</div>
+    </aside>
+    <main class="main-content">
+      <div id="t-dash" class="ttab"></div>
+      <div id="t-students" class="ttab" style="display:none;"></div>
+      <div id="t-student-detail" class="ttab" style="display:none;"></div>
+      <div id="t-subjects" class="ttab" style="display:none;"></div>
+    </main>
+  </div>
+</section>
+
+<!-- ============ ADMIN APP ============ -->
+<section id="view-admin" class="view">
+  <div class="app-shell">
+    <aside class="sidebar-cc">
+      <div class="side-link active" data-tab="a-dash" onclick="AdminUI.tab('a-dash',this)"><i class="fa-solid fa-gauge"></i> Dashboard</div>
+      <div class="side-link" data-tab="a-students" onclick="AdminUI.tab('a-students',this)"><i class="fa-solid fa-user-graduate"></i> Students</div>
+      <div class="side-link" data-tab="a-teachers" onclick="AdminUI.tab('a-teachers',this)"><i class="fa-solid fa-chalkboard-user"></i> Teachers</div>
+      <div class="side-link" data-tab="a-depts" onclick="AdminUI.tab('a-depts',this)"><i class="fa-solid fa-building-columns"></i> Departments</div>
+      <div class="side-link" data-tab="a-questions" onclick="AdminUI.tab('a-questions',this)"><i class="fa-solid fa-list-check"></i> Questionnaire</div>
+      <div class="side-link" data-tab="a-reports" onclick="AdminUI.tab('a-reports',this)"><i class="fa-solid fa-file-export"></i> Reports</div>
+      <div class="side-link" data-tab="a-backup" onclick="AdminUI.tab('a-backup',this)"><i class="fa-solid fa-database"></i> Backup &amp; Restore</div>
+      <div class="side-link" data-tab="a-audit" onclick="AdminUI.tab('a-audit',this)"><i class="fa-solid fa-clipboard-list"></i> Audit Log</div>
+      <div class="side-link" data-tab="a-tests" onclick="AdminUI.tab('a-tests',this)"><i class="fa-solid fa-vial-circle-check"></i> System Tests</div>
+      <hr style="border-color:var(--mist);">
+      <div class="side-link" data-tab="a-subjects" onclick="AdminUI.tab('a-subjects',this)"><i class="fa-solid fa-graduation-cap"></i> Subjects Used</div>
+    </aside>
+    <main class="main-content">
+      <div id="a-dash" class="atab"></div>
+      <div id="a-students" class="atab" style="display:none;"></div>
+      <div id="a-teachers" class="atab" style="display:none;"></div>
+      <div id="a-depts" class="atab" style="display:none;"></div>
+      <div id="a-questions" class="atab" style="display:none;"></div>
+      <div id="a-reports" class="atab" style="display:none;"></div>
+      <div id="a-backup" class="atab" style="display:none;"></div>
+      <div id="a-audit" class="atab" style="display:none;"></div>
+      <div id="a-tests" class="atab" style="display:none;"></div>
+      <div id="a-subjects" class="atab" style="display:none;"></div>
+    </main>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="view-about" class="view">
+  <div class="section-pad">
+    <div class="container" style="max-width:820px;">
+      <button class="btn-cc-ghost mb-3" onclick="Router.go('landing')"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i>Back to home</button>
+      <span class="eyebrow-badge"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i> About Calm Compass</span>
+      <h2 class="section-title mt-3">Awareness, not diagnosis</h2>
+      <p class="section-sub mb-4">Calm Compass helps students complete a short weekly wellbeing check-in, see their own trend honestly, and lets authorised teachers and counsellors notice who might benefit from a supportive conversation — early, before a quiet bad week turns into a crisis.</p>
+
+      <div class="card-cc mb-4">
+        <h5 class="mb-2">What this tool is — and isn't</h5>
+        <p class="small text-muted mb-2">Calm Compass is an <strong>awareness and early-conversation tool</strong>. It is <strong>not</strong> a clinical or diagnostic instrument, it does not detect mental illness, and it does not replace a qualified doctor, psychologist, or counsellor. No score from this app should be treated as a medical or psychological assessment.</p>
+        <p class="small text-muted mb-0">It also does not provide emergency monitoring. Nobody is watching responses in real time, and a "Very High" result does not trigger any automatic alert to emergency services.</p>
+      </div>
+
+      <div class="card-cc mb-4" id="ifStruggling">
+        <h5 class="mb-2">If you or someone you know is struggling</h5>
+        <p class="small text-muted mb-2">Reach out to <span id="instNameSpan1">your institution</span>'s counselling cell, a trusted teacher, mentor, or family member, or a licensed mental health professional. Talking to a real person early is the single most useful next step this app can point you toward.</p>
+        <p class="small text-muted mb-0"><strong>In an emergency, or if you feel unsafe right now, contact local emergency services immediately.</strong> Do not wait on an app response — call for help.</p>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-md-4"><div class="card-cc h-100 text-center"><i class="fa-solid fa-eye fa-lg mb-2" style="color:var(--primary)" aria-hidden="true"></i><div class="fw-bold small">Early visibility</div><p class="small text-muted mb-0 mt-1">Trends surface before a single bad day looks urgent.</p></div></div>
+        <div class="col-md-4"><div class="card-cc h-100 text-center"><i class="fa-solid fa-lock fa-lg mb-2" style="color:var(--primary)" aria-hidden="true"></i><div class="fw-bold small">Private by default</div><p class="small text-muted mb-0 mt-1">Only authorised staff can see individual results.</p></div></div>
+        <div class="col-md-4"><div class="card-cc h-100 text-center"><i class="fa-solid fa-comments fa-lg mb-2" style="color:var(--primary)" aria-hidden="true"></i><div class="fw-bold small">Supportive language</div><p class="small text-muted mb-0 mt-1">"May benefit from a check-in" — never a label.</p></div></div>
+      </div>
+
+      <p class="small text-muted">Questions about a pilot, setup, or your data? Contact <a href="#" id="aboutEmailLink"></a>. See also <a href="#" onclick="Router.go('privacy');return false;">Privacy &amp; Data Use</a> and <a href="#" onclick="Router.go('cds');return false;">C &amp; Data Structures Used</a>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRIVACY & DATA USE ============ -->
+<section id="view-privacy" class="view">
+  <div class="section-pad">
+    <div class="container" style="max-width:820px;">
+      <button class="btn-cc-ghost mb-3" onclick="Router.go('landing')"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i>Back to home</button>
+      <span class="eyebrow-badge"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Privacy &amp; data use</span>
+      <h2 class="section-title mt-3">What we collect, why, and who can see it</h2>
+      <p class="section-sub mb-4">This page is written in plain language on purpose. If anything here is unclear, please ask before you register.</p>
+
+      <div class="card-cc mb-3">
+        <h6 class="fw-bold">What's collected</h6>
+        <p class="small text-muted mb-0">Your name, student ID, contact details, department/year/section, your weekly check-in answers and score, and an optional free-text reflection you choose to write. We don't collect anything beyond what's needed to run the check-in and connect you with support.</p>
+      </div>
+      <div class="card-cc mb-3">
+        <h6 class="fw-bold">Why we collect it</h6>
+        <p class="small text-muted mb-0">To show you your own trend over time, to let a teacher or counsellor you're affiliated with notice patterns worth a supportive conversation, and to let an administrator keep departments, accounts, and the question bank up to date.</p>
+      </div>
+      <div class="card-cc mb-3">
+        <h6 class="fw-bold">Who can see it</h6>
+        <ul class="small text-muted mb-0">
+          <li><strong>You</strong> always see your own results, history, and reflections.</li>
+          <li><strong>Teachers/counsellors</strong> can see check-in results and trends only for students in their assigned cohort, for the purpose of supportive outreach — never anonymous browsing of the whole student body.</li>
+          <li><strong>Admins</strong> can manage accounts and see anonymised, aggregated reports (by department, year, month) by default; access to any individual record is logged in the audit trail.</li>
+        </ul>
+      </div>
+      <div class="card-cc mb-3">
+        <h6 class="fw-bold">How long we keep it &amp; how to delete it</h6>
+        <p class="small text-muted mb-0">Data stays in this browser's local storage for as long as your account exists. To request deletion of your account and check-in history, use the button below or contact <a href="#" id="privacyEmailLink"></a> — we'll confirm once it's done.</p>
+      </div>
+      <div class="card-cc mb-4">
+        <h6 class="fw-bold">Your consent</h6>
+        <p class="small text-muted mb-0">Registering requires actively agreeing to this page. You can withdraw consent at any time by requesting account deletion — this does not affect the legality of anything already agreed to.</p>
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn-cc-outline" onclick="PrivacyUI.requestDeletion()"><i class="fa-solid fa-trash-can me-1" aria-hidden="true"></i>Request my data be deleted</button>
+        <button class="btn-cc-ghost" onclick="Router.go('about')">About Calm Compass</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="view-cds" class="view">
+  <div class="section-pad">
+    <div class="container">
+      <button class="btn-cc-ghost mb-3" onclick="Router.go('landing')"><i class="fa-solid fa-arrow-left me-1"></i>Back to home</button>
+      <span class="eyebrow-badge"><i class="fa-solid fa-c"></i> Project viva reference</span>
+      <h2 class="section-title mt-3">C Language &amp; Data Structures concepts used in this project</h2>
+      <p class="section-sub mb-5">Calm Compass is implemented in JavaScript, but the logic underneath leans on the same fundamentals taught in Programming in C and Data Structures. Here's exactly where each concept shows up.</p>
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="card-cc h-100">
+            <div class="icon-tile"><i class="fa-solid fa-c"></i></div>
+            <h5>Variables &amp; data types</h5>
+            <p class="text-muted small mb-0">Every student, assessment and question record holds typed fields — strings for names and IDs, numbers for scores, booleans for flags — the same idea as declaring <span class="font-mono">int</span>, <span class="font-mono">char</span> and <span class="font-mono">float</span> variables in C.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-cc h-100">
+            <div class="icon-tile"><i class="fa-solid fa-code-branch"></i></div>
+            <h5>Control structures</h5>
+            <p class="text-muted small mb-0"><span class="font-mono">if / else</span> chains decide the stress category (Low, Moderate, High, Very High) from a score — the same job a C <span class="font-mono">switch-case</span> or nested <span class="font-mono">if</span> block does.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-cc h-100">
+            <div class="icon-tile"><i class="fa-solid fa-rotate"></i></div>
+            <h5>Loops</h5>
+            <p class="text-muted small mb-0"><span class="font-mono">for</span> / <span class="font-mono">forEach</span> loops walk through every question, student and assessment to build the tables, totals and charts on each dashboard — just like <span class="font-mono">for</span> and <span class="font-mono">while</span> loops in C.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-cc h-100">
+            <div class="icon-tile"><i class="fa-solid fa-puzzle-piece"></i></div>
+            <h5>Functions &amp; modular programming</h5>
+            <p class="text-muted small mb-0">Small reusable functions such as <span class="font-mono">uid()</span> and <span class="font-mono">todayISO()</span> mirror C's approach of breaking a program into single-purpose functions instead of one long block of code.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-cc h-100">
+            <div class="icon-tile"><i class="fa-solid fa-table-cells"></i></div>
+            <h5>Arrays</h5>
+            <p class="text-muted small mb-0">Students, teachers, assessments, departments and questions are all stored as arrays of records — the direct equivalent of arrays of structs in C.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-cc h-100">
+            <div class="icon-tile"><i class="fa-solid fa-layer-group"></i></div>
+            <h5>Structures</h5>
+            <p class="text-muted small mb-0">Each student or assessment object (id, name, department, score, category) groups related fields together — the same idea a C <span class="font-mono">struct</span> is used for.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-cc h-100">
+            <div class="icon-tile"><i class="fa-solid fa-magnifying-glass"></i></div>
+            <h5>Searching</h5>
+            <p class="text-muted small mb-0">Looking up a student by ID or email at login scans the student array until a match is found — a linear search, the same technique taught for searching arrays in Data Structures.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-cc h-100">
+            <div class="icon-tile"><i class="fa-solid fa-arrow-down-a-z"></i></div>
+            <h5>Sorting</h5>
+            <p class="text-muted small mb-0">Assessment history, admin reports and recent-activity tables are all sorted by date or score before display, using the same comparison-based sorting idea covered in Data Structures.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-cc h-100">
+            <div class="icon-tile"><i class="fa-solid fa-list-ol"></i></div>
+            <h5>Queues (FIFO)</h5>
+            <p class="text-muted small mb-0">The assessment questionnaire presents one question after another in the order it was added — first in, first shown — the same principle behind a queue.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-cc h-100">
+            <div class="icon-tile"><i class="fa-solid fa-layer-group"></i></div>
+            <h5>Stacks (LIFO)</h5>
+            <p class="text-muted small mb-0">Recommendation notes and history entries are shown newest-first — last added, first shown — the same last-in-first-out idea behind a stack.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-cc h-100">
+            <div class="icon-tile"><i class="fa-solid fa-hashtag"></i></div>
+            <h5>Hashing-style ID generation</h5>
+            <p class="text-muted small mb-0"><span class="font-mono">uid()</span> combines a timestamp with a random value to generate a unique key for every record — the same goal a hash-based key generator serves in Data Structures.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-cc h-100">
+            <div class="icon-tile"><i class="fa-solid fa-file-lines"></i></div>
+            <h5>File handling (analogue)</h5>
+            <p class="text-muted small mb-0">Backup export/import and the CSV/PDF downloads read and write structured data as files — the same read/write idea as file handling in C, done through the browser instead of <span class="font-mono">fopen()</span>.</p>
+          </div>
+        </div>
+      </div>
+      <div class="quote-banner mt-5">
+        This page is a study/viva reference connecting the JavaScript implementation back to core Programming (C) and Data Structures concepts — it isn't literal C code.
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer class="cc-footer view active" id="footerBar">
+  <div class="container d-flex flex-wrap justify-content-between gap-2">
+    <div>© 2026 Calm Compass. Built for academic project evaluation.</div>
+    <nav aria-label="Footer">
+      <a href="#" class="text-decoration-none" onclick="Router.go('about');return false;">About</a> ·
+      <a href="#" class="text-decoration-none" onclick="Router.go('login');return false;">Login</a> ·
+      <a href="#" class="text-decoration-none" onclick="Router.go('register');return false;">Register</a> ·
+      <a href="#" class="text-decoration-none" onclick="Router.go('privacy');return false;">Privacy &amp; Data Use</a> ·
+      <a href="#" class="text-decoration-none" onclick="Router.go('cds');return false;">C &amp; Data Structures Used</a>
+    </nav>
+  </div>
+</footer>
+
+<div class="toast-cc" id="toastHost" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
