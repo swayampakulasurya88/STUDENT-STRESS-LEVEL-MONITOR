@@ -17,6 +17,13 @@ const CONFIG = {
   institutionName: (window.CALM_COMPASS_INSTITUTION || 'your institution'),
 };
 
+/* dark-theme chart defaults so every Chart.js canvas stays readable */
+if (typeof Chart !== 'undefined') {
+  Chart.defaults.color = '#A7A0C9';
+  Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+  Chart.defaults.font.family = "'Manrope', 'Segoe UI', sans-serif";
+}
+
 /* NOTE on password storage: hashPw() below is a lightweight, reversible
    obfuscation (Base64), NOT a cryptographic hash. It exists only so this
    demo never stores plain-text passwords in localStorage in an obviously
@@ -68,7 +75,7 @@ function renderCrisisHelp(){
       <i class="fa-solid fa-life-ring crisis-icon" aria-hidden="true"></i>
       <div>
         <h6 class="fw-bold mb-1">If you're in danger or crisis right now</h6>
-        <p class="small mb-2" style="color:#7C2D12;">
+        <p class="small mb-2" style="color:#FED7AA;">
           Calm Compass is an awareness tool, not an emergency or monitoring service — no one is watching this in real time.
           If you feel unsafe or are thinking about harming yourself, please contact local emergency services right away,
           or reach out immediately to a trusted person, a doctor, or ${CONFIG.institutionName}'s counselling service.
@@ -668,7 +675,7 @@ const StudentUI = {
             <h4 class="font-display mb-1">Hi ${st.name.split(' ')[0]}, good to see you.</h4>
             <div class="small" style="opacity:.9;">${st.department} · ${st.year} · Section ${st.section}</div>
           </div>
-          <button class="btn-cc-primary" style="background:#fff;color:var(--primary-deep);" onclick="StudentUI.tab('s-assess', document.querySelector('[data-tab=s-assess]'))">Start Assessment</button>
+          <button class="btn-cc-primary" style="background:#fff;color:#7C3AED;" onclick="StudentUI.tab('s-assess', document.querySelector('[data-tab=s-assess]'))">Start Assessment</button>
         </div>
       </div>
       <div class="row g-3 mb-4">
@@ -1004,10 +1011,10 @@ const TeacherUI = {
       <h4 class="font-display mb-3">Cohort overview</h4>
       <div class="row g-3 mb-4">
         <div class="col-md-2 col-6"><div class="stat-tile"><div class="val">${db.students.length}</div><div class="lbl">Total students</div></div></div>
-        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#15803D">${counts.Low}</div><div class="lbl">Low stress</div></div></div>
-        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#B45309">${counts.Moderate}</div><div class="lbl">Moderate</div></div></div>
-        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#C2410C">${counts.High}</div><div class="lbl">High</div></div></div>
-        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#B91C1C">${counts['Very High']}</div><div class="lbl">Very High</div></div></div>
+        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#4ADE80">${counts.Low}</div><div class="lbl">Low stress</div></div></div>
+        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#FCD34D">${counts.Moderate}</div><div class="lbl">Moderate</div></div></div>
+        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#FB923C">${counts.High}</div><div class="lbl">High</div></div></div>
+        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#F87171">${counts['Very High']}</div><div class="lbl">Very High</div></div></div>
       </div>
       <div class="row g-3">
         <div class="col-lg-4"><div class="card-cc"><h6 class="fw-bold">Distribution</h6><canvas id="teachPie"></canvas></div></div>
@@ -1161,7 +1168,7 @@ const AdminUI = {
         <div class="col-md-2 col-6"><div class="stat-tile"><div class="val">${db.teachers.length}</div><div class="lbl">Teachers</div></div></div>
         <div class="col-md-2 col-6"><div class="stat-tile"><div class="val">${db.assessments.length}</div><div class="lbl">Assessments</div></div></div>
         <div class="col-md-2 col-6"><div class="stat-tile"><div class="val">${db.departments.length}</div><div class="lbl">Departments</div></div></div>
-        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#B91C1C">${highStress}</div><div class="lbl">High+ stress records</div></div></div>
+        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#F87171">${highStress}</div><div class="lbl">High+ stress records</div></div></div>
       </div>
       <div class="row g-3 mb-4">
         <div class="col-lg-6"><div class="card-cc"><h6 class="fw-bold">Department distribution</h6><canvas id="adminDeptChart"></canvas></div></div>
