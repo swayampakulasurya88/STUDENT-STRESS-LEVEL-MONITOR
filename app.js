@@ -19,8 +19,8 @@ const CONFIG = {
 
 /* dark-theme chart defaults so every Chart.js canvas stays readable */
 if (typeof Chart !== 'undefined') {
-  Chart.defaults.color = '#A7A0C9';
-  Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+  Chart.defaults.color = '#64748B';
+  Chart.defaults.borderColor = 'rgba(0,0,0,0.06)';
   Chart.defaults.font.family = "'Manrope', 'Segoe UI', sans-serif";
 }
 
@@ -75,7 +75,7 @@ function renderCrisisHelp(){
       <i class="fa-solid fa-life-ring crisis-icon" aria-hidden="true"></i>
       <div>
         <h6 class="fw-bold mb-1">If you're in danger or crisis right now</h6>
-        <p class="small mb-2" style="color:#FED7AA;">
+        <p class="small mb-2" style="color:#B91C1C;">
           Calm Compass is an awareness tool, not an emergency or monitoring service — no one is watching this in real time.
           If you feel unsafe or are thinking about harming yourself, please contact local emergency services right away,
           or reach out immediately to a trusted person, a doctor, or ${CONFIG.institutionName}'s counselling service.
@@ -284,7 +284,7 @@ function chipClass(cat){
   return {Low:'chip-low', Moderate:'chip-mod', High:'chip-high', 'Very High':'chip-vhigh'}[cat] || 'chip-low';
 }
 function categoryColor(cat){
-  return {Low:'#22C55E', Moderate:'#F59E0B', High:'#F97316', 'Very High':'#EF4444'}[cat] || '#22C55E';
+  return {Low:'#16A34A', Moderate:'#D97706', High:'#EA580C', 'Very High':'#DC2626'}[cat] || '#16A34A';
 }
 function recommendationsFor(cat){
   const map = {
@@ -365,7 +365,7 @@ function toast(msg, type){
   type = type || 'primary';
   const el = document.createElement('div');
   el.className = 'toast align-items-center text-white border-0 show mb-2';
-  el.style.background = ({primary:'#7C3AED',success:'#22C55E',danger:'#EF4444',warning:'#F59E0B'})[type] || '#7C3AED';
+  el.style.background = ({primary:'#0D9488',success:'#16A34A',danger:'#DC2626',warning:'#D97706'})[type] || '#0D9488';
   el.innerHTML = `<div class="d-flex"><div class="toast-body">${msg}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="this.closest('.toast').remove()"></button></div>`;
   document.getElementById('toastHost').appendChild(el);
   setTimeout(()=>el.remove(), 3500);
@@ -669,13 +669,13 @@ const StudentUI = {
     const latest = mine[0];
     const quote = QUOTES[Math.floor(Math.random()*QUOTES.length)];
     document.getElementById('s-dash').innerHTML = `
-      <div class="card-cc mb-4" style="background:linear-gradient(120deg, var(--primary), var(--secondary)); color:#fff;">
+      <div class="card-cc mb-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
           <div>
             <h4 class="font-display mb-1">Hi ${st.name.split(' ')[0]}, good to see you.</h4>
-            <div class="small" style="opacity:.9;">${st.department} · ${st.year} · Section ${st.section}</div>
+            <div class="small text-muted">${st.department} · ${st.year} · Section ${st.section}</div>
           </div>
-          <button class="btn-cc-primary" style="background:#fff;color:#7C3AED;" onclick="StudentUI.tab('s-assess', document.querySelector('[data-tab=s-assess]'))">Start Assessment</button>
+          <button class="btn-cc-primary" onclick="StudentUI.tab('s-assess', document.querySelector('[data-tab=s-assess]'))">Start Assessment</button>
         </div>
       </div>
       <div class="row g-3 mb-4">
@@ -709,7 +709,7 @@ const StudentUI = {
     const ordered = [...mine].reverse();
     new Chart(ctx, {
       type:'line',
-      data:{ labels: ordered.map(a=>a.date), datasets:[{ label:'Stress score', data: ordered.map(a=>a.totalScore), borderColor:'#7C3AED', backgroundColor:'rgba(124,58,237,.12)', fill:true, tension:.35 }] },
+      data:{ labels: ordered.map(a=>a.date), datasets:[{ label:'Stress score', data: ordered.map(a=>a.totalScore), borderColor:'#0D9488', backgroundColor:'rgba(13,148,136,.18)', fill:true, tension:.35 }] },
       options:{ plugins:{legend:{display:false}}, scales:{ y:{ min:0, max:80 } } }
     });
   },
@@ -899,11 +899,11 @@ const StudentUI = {
       </div>
     `;
     const ordered = [...mine].reverse();
-    new Chart(document.getElementById('histLineChart'), { type:'line', data:{ labels: ordered.map(a=>a.date), datasets:[{label:'Score', data:ordered.map(a=>a.totalScore), borderColor:'#F43F5E', tension:.3}]}, options:{plugins:{legend:{display:false}}} });
+    new Chart(document.getElementById('histLineChart'), { type:'line', data:{ labels: ordered.map(a=>a.date), datasets:[{label:'Score', data:ordered.map(a=>a.totalScore), borderColor:'#0D9488', tension:.3}]}, options:{plugins:{legend:{display:false}}} });
     const counts = {Low:0,Moderate:0,High:0,'Very High':0};
     mine.forEach(a=>counts[a.category]++);
-    new Chart(document.getElementById('histPieChart'), { type:'pie', data:{ labels:Object.keys(counts), datasets:[{data:Object.values(counts), backgroundColor:['#22C55E','#F59E0B','#F97316','#EF4444']}]} });
-    new Chart(document.getElementById('histBarChart'), { type:'bar', data:{ labels: ordered.map((a,i)=>'#'+(i+1)), datasets:[{data:ordered.map(a=>a.totalScore), backgroundColor:'#7C3AED'}]}, options:{plugins:{legend:{display:false}}} });
+    new Chart(document.getElementById('histPieChart'), { type:'pie', data:{ labels:Object.keys(counts), datasets:[{data:Object.values(counts), backgroundColor:['#16A34A','#D97706','#EA580C','#DC2626']}]} });
+    new Chart(document.getElementById('histBarChart'), { type:'bar', data:{ labels: ordered.map((a,i)=>'#'+(i+1)), datasets:[{data:ordered.map(a=>a.totalScore), backgroundColor:'#0D9488'}]}, options:{plugins:{legend:{display:false}}} });
   },
   renderRecs(){
     const st = this.me();
@@ -1011,10 +1011,10 @@ const TeacherUI = {
       <h4 class="font-display mb-3">Cohort overview</h4>
       <div class="row g-3 mb-4">
         <div class="col-md-2 col-6"><div class="stat-tile"><div class="val">${db.students.length}</div><div class="lbl">Total students</div></div></div>
-        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#4ADE80">${counts.Low}</div><div class="lbl">Low stress</div></div></div>
-        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#FCD34D">${counts.Moderate}</div><div class="lbl">Moderate</div></div></div>
-        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#FB923C">${counts.High}</div><div class="lbl">High</div></div></div>
-        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#F87171">${counts['Very High']}</div><div class="lbl">Very High</div></div></div>
+        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#16A34A">${counts.Low}</div><div class="lbl">Low stress</div></div></div>
+        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#D97706">${counts.Moderate}</div><div class="lbl">Moderate</div></div></div>
+        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#EA580C">${counts.High}</div><div class="lbl">High</div></div></div>
+        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#DC2626">${counts['Very High']}</div><div class="lbl">Very High</div></div></div>
       </div>
       <div class="row g-3">
         <div class="col-lg-4"><div class="card-cc"><h6 class="fw-bold">Distribution</h6><canvas id="teachPie"></canvas></div></div>
@@ -1022,12 +1022,12 @@ const TeacherUI = {
         <div class="col-lg-4"><div class="card-cc"><h6 class="fw-bold">Assessments over time</h6><canvas id="teachLine"></canvas></div></div>
       </div>
     `;
-    new Chart(document.getElementById('teachPie'), {type:'pie', data:{labels:Object.keys(counts), datasets:[{data:Object.values(counts), backgroundColor:['#22C55E','#F59E0B','#F97316','#EF4444']}]}});
-    new Chart(document.getElementById('teachBar'), {type:'bar', data:{labels:Object.keys(counts), datasets:[{data:Object.values(counts), backgroundColor:'#7C3AED'}]}, options:{plugins:{legend:{display:false}}}});
+    new Chart(document.getElementById('teachPie'), {type:'pie', data:{labels:Object.keys(counts), datasets:[{data:Object.values(counts), backgroundColor:['#16A34A','#D97706','#EA580C','#DC2626']}]}});
+    new Chart(document.getElementById('teachBar'), {type:'bar', data:{labels:Object.keys(counts), datasets:[{data:Object.values(counts), backgroundColor:'#0D9488'}]}, options:{plugins:{legend:{display:false}}}});
     const byDate = {};
     db.assessments.forEach(a=>{ byDate[a.date]=(byDate[a.date]||0)+1; });
     const dates = Object.keys(byDate).sort();
-    new Chart(document.getElementById('teachLine'), {type:'line', data:{labels:dates, datasets:[{data:dates.map(d=>byDate[d]), borderColor:'#F43F5E', tension:.3}]}, options:{plugins:{legend:{display:false}}}});
+    new Chart(document.getElementById('teachLine'), {type:'line', data:{labels:dates, datasets:[{data:dates.map(d=>byDate[d]), borderColor:'#0D9488', tension:.3}]}, options:{plugins:{legend:{display:false}}}});
   },
   renderStudents(){
     const db = Store.db();
@@ -1120,7 +1120,7 @@ const TeacherUI = {
       </div>
     `;
     const ordered = [...mine].reverse();
-    new Chart(document.getElementById('teacherStudentTrend'), {type:'line', data:{labels:ordered.map(a=>a.date), datasets:[{data:ordered.map(a=>a.totalScore), borderColor:'#7C3AED', backgroundColor:'rgba(124,58,237,.12)', fill:true, tension:.35}]}, options:{plugins:{legend:{display:false}}, scales:{y:{min:0,max:80}}}});
+    new Chart(document.getElementById('teacherStudentTrend'), {type:'line', data:{labels:ordered.map(a=>a.date), datasets:[{data:ordered.map(a=>a.totalScore), borderColor:'#0D9488', backgroundColor:'rgba(13,148,136,.18)', fill:true, tension:.35}]}, options:{plugins:{legend:{display:false}}, scales:{y:{min:0,max:80}}}});
   },
   sendRecommendation(){
     const text = document.getElementById('teacherRecText').value.trim();
@@ -1168,7 +1168,7 @@ const AdminUI = {
         <div class="col-md-2 col-6"><div class="stat-tile"><div class="val">${db.teachers.length}</div><div class="lbl">Teachers</div></div></div>
         <div class="col-md-2 col-6"><div class="stat-tile"><div class="val">${db.assessments.length}</div><div class="lbl">Assessments</div></div></div>
         <div class="col-md-2 col-6"><div class="stat-tile"><div class="val">${db.departments.length}</div><div class="lbl">Departments</div></div></div>
-        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#F87171">${highStress}</div><div class="lbl">High+ stress records</div></div></div>
+        <div class="col-md-2 col-6"><div class="stat-tile"><div class="val" style="color:#DC2626">${highStress}</div><div class="lbl">High+ stress records</div></div></div>
       </div>
       <div class="row g-3 mb-4">
         <div class="col-lg-6"><div class="card-cc"><h6 class="fw-bold">Department distribution</h6><canvas id="adminDeptChart"></canvas></div></div>
@@ -1186,10 +1186,10 @@ const AdminUI = {
     const deptCounts = {};
     db.departments.forEach(d=>deptCounts[d.name]=0);
     db.students.forEach(s=>{ if(deptCounts[s.department]!==undefined) deptCounts[s.department]++; });
-    new Chart(document.getElementById('adminDeptChart'), {type:'bar', data:{labels:Object.keys(deptCounts), datasets:[{data:Object.values(deptCounts), backgroundColor:'#F43F5E'}]}, options:{plugins:{legend:{display:false}}}});
+    new Chart(document.getElementById('adminDeptChart'), {type:'bar', data:{labels:Object.keys(deptCounts), datasets:[{data:Object.values(deptCounts), backgroundColor:'#0D9488'}]}, options:{plugins:{legend:{display:false}}}});
     const catCounts = {Low:0,Moderate:0,High:0,'Very High':0};
     db.assessments.forEach(a=>catCounts[a.category]++);
-    new Chart(document.getElementById('adminCatChart'), {type:'doughnut', data:{labels:Object.keys(catCounts), datasets:[{data:Object.values(catCounts), backgroundColor:['#22C55E','#F59E0B','#F97316','#EF4444']}]}});
+    new Chart(document.getElementById('adminCatChart'), {type:'doughnut', data:{labels:Object.keys(catCounts), datasets:[{data:Object.values(catCounts), backgroundColor:['#16A34A','#D97706','#EA580C','#DC2626']}]}});
   },
   renderStudents(){
     const db = Store.db();
