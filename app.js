@@ -423,7 +423,7 @@ const NavUI = {
     if(s.role==='teacher'){ const t = Store.db().teachers.find(x=>x.id===s.id); label = t ? t.name : 'Teacher'; }
     if(s.role==='admin'){ label = 'Admin'; }
     box.innerHTML = `
-      <span class="small fw-bold text-muted d-none d-sm-inline">${label} · <span class="text-capitalize">${s.role}</span></span>
+      <span class="small fw-bold text-muted d-none d-sm-inline">${escapeHtml(label)} · <span class="text-capitalize">${escapeHtml(s.role)}</span></span>
       <button class="btn-cc-outline" onclick="Auth.logout()"><i class="fa-solid fa-right-from-bracket me-1"></i>Log out</button>`;
   }
 };
@@ -450,14 +450,14 @@ const Auth = {
       const st = db.students.find(s => s.studentId.toLowerCase()===id.toLowerCase() || s.email.toLowerCase()===id.toLowerCase());
       if(!st || st.passwordHash !== hashPw(pw)){ errEl.textContent='Invalid ID or password.'; return false; }
       Store.setSession({role:'student', id: st.id});
-      toast('Welcome back, '+st.name.split(' ')[0]+'!','success');
+      toast('Welcome back, '+escapeHtml(st.name.split(' ')[0])+'!','success');
       Router.go('student');
     } else if(this.loginRole==='teacher'){
       const t = db.teachers.find(x=>x.email.toLowerCase()===id.toLowerCase());
       if(!t || t.passwordHash !== hashPw(pw)){ errEl.textContent='Invalid email or password.'; return false; }
       Store.setSession({role:'teacher', id: t.id});
       logAudit(db, 'teacher', t.name, 'Signed in'); Store.save(db);
-      toast('Welcome back, '+t.name.split(' ')[0]+'!','success');
+      toast('Welcome back, '+escapeHtml(t.name.split(' ')[0])+'!','success');
       Router.go('teacher');
     } else {
       const a = db.admin.find(x=>x.username.toLowerCase()===id.toLowerCase());
@@ -497,7 +497,7 @@ const Auth = {
     db.students.push(student);
     Store.save(db);
     Store.setSession({role:'student', id: student.id});
-    toast('Account created — welcome, '+name.split(' ')[0]+'!','success');
+    toast('Account created — welcome, '+escapeHtml(name.split(' ')[0])+'!','success');
     Router.go('student');
     return false;
   },
@@ -644,6 +644,31 @@ function fillDeptSelect(selectId, includeAll){
 /* =========================================================
    STUDENT UI
    ========================================================= */
+
+/** Shared report generator used by both the student's own "Download
+ *  report" and the teacher's "Download latest report" button. */
+function generateReportPdf(st, a){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFont('helvetica','bold'); doc.setFontSize(18);
+  doc.text('Calm Compass — Stress Assessment Report', 14, 20);
+  doc.setFontSize(11); doc.setFont('helvetica','normal');
+  doc.text(`Student: ${st.name}  (${st.studentId})`, 14, 32);
+  doc.text(`Department: ${st.department}   Year: ${st.year}   Section: ${st.section}`, 14, 39);
+  doc.text(`Assessment date: ${a.date}`, 14, 46);
+  doc.setFontSize(14); doc.setFont('helvetica','bold');
+  doc.text(`Score: ${a.totalScore} / 80   Category: ${a.category}   Risk: ${Math.round(a.totalScore/80*100)}%`, 14, 58);
+  doc.setFontSize(11); doc.setFont('helvetica','bold');
+  doc.text('Recommendations:', 14, 70);
+  doc.setFont('helvetica','normal');
+  let y = 77;
+  recommendationsFor(a.category).forEach(r=>{
+    const lines = doc.splitTextToSize('• '+r, 180);
+    doc.text(lines, 14, y); y += lines.length*6;
+  });
+  doc.save(`stress-report-${st.studentId}-${a.date}.pdf`);
+}
+
 const StudentUI = {
   currentAnswers: {},
   tab(id, el){
@@ -672,8 +697,8 @@ const StudentUI = {
       <div class="card-cc mb-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
           <div>
-            <h4 class="font-display mb-1">Hi ${st.name.split(' ')[0]}, good to see you.</h4>
-            <div class="small text-muted">${st.department} · ${st.year} · Section ${st.section}</div>
+            <h4 class="font-display mb-1">Hi ${escapeHtml(st.name.split(' ')[0])}, good to see you.</h4>
+            <div class="small text-muted">${escapeHtml(st.department)} · ${escapeHtml(st.year)} · Section ${escapeHtml(st.section)}</div>
           </div>
           <button class="btn-cc-primary" onclick="StudentUI.tab('s-assess', document.querySelector('[data-tab=s-assess]'))">Start Assessment</button>
         </div>
@@ -724,12 +749,12 @@ const StudentUI = {
     db.questions.forEach((q, i) => {
       const domain = q.domain || 'General';
       if(domain !== lastDomain){
-        html += `<h5 class="domain-head"><span class="domain-icon" aria-hidden="true"><i class="fa-solid ${DOMAIN_ICONS[domain] || 'fa-circle-question'}"></i></span>${domain}</h5>`;
+        html += `<h5 class="domain-head"><span class="domain-icon" aria-hidden="true"><i class="fa-solid ${DOMAIN_ICONS[domain] || 'fa-circle-question'}"></i></span>${escapeHtml(domain)}</h5>`;
         lastDomain = domain;
       }
       html += `
       <fieldset class="q-card">
-        <legend class="fw-bold small mb-1" style="float:none; width:auto; font-size:inherit; padding:0;">${i+1}. ${q.text}</legend>
+        <legend class="fw-bold small mb-1" style="float:none; width:auto; font-size:inherit; padding:0;">${i+1}. ${escapeHtml(q.text)}</legend>
         <div class="q-options" data-qid="${q.id}" role="radiogroup" aria-label="Question ${i+1}">
           ${['Never','Rarely','Sometimes','Often','Always'].map((lbl,v)=>`
             <label class="q-opt" tabindex="0" onclick="StudentUI.selectAnswer('${q.id}',${v}, this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); this.click();}">
@@ -793,7 +818,8 @@ const StudentUI = {
     document.querySelectorAll('#view-student .stab').forEach(t=>t.style.display='none');
     document.getElementById('s-result').style.display='block';
     const st = this.me();
-    const mine = Store.db().assessments.filter(x=>x.studentId===st.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    const db = Store.db();
+    const mine = db.assessments.filter(x=>x.studentId===st.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
     const a = mine.find(x=>x.id===assessmentId);
     const prior = mine.find(x=>x.id!==assessmentId); // most recent OTHER assessment
     const pct = Math.round(a.totalScore/80*100);
@@ -811,11 +837,20 @@ const StudentUI = {
       const icon = diff === 0 ? 'fa-minus' : (diff > 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down');
       trendHtml = `<p class="small mb-0"><i class="fa-solid ${icon} me-1" aria-hidden="true"></i>Your score is <strong>${Math.abs(diff)} points ${dir}</strong> your previous check-in on ${prior.date} (${prior.totalScore}/80, ${prior.category}).</p>`;
     }
-    const domainRows = DOMAINS.map(d=>{
+    // Per-domain max = (number of questions in that domain) × 4, so the bars
+    // stay accurate even if an admin adds/removes questions or uses "General".
+    const domainMax = {};
+    db.questions.forEach(q=>{ const d = q.domain || 'General'; domainMax[d] = (domainMax[d]||0) + 1; });
+    const domKeys = Object.keys(a.domainTotals || {}).sort((x,y)=>{
+      const ix = DOMAINS.indexOf(x), iy = DOMAINS.indexOf(y);
+      return (ix < 0 ? 99 : ix) - (iy < 0 ? 99 : iy);
+    });
+    const domainRows = domKeys.map(d=>{
       const v = (a.domainTotals && a.domainTotals[d]) || 0;
-      const domPct = Math.round(v/16*100);
+      const max = (domainMax[d] || 0) * 4;
+      const domPct = max ? Math.round(v/max*100) : 0;
       return `<div class="mb-2">
-        <div class="d-flex justify-content-between small"><span>${d}</span><span class="font-mono">${v}/16</span></div>
+        <div class="d-flex justify-content-between small"><span>${escapeHtml(d)}</span><span class="font-mono">${v}/${max}</span></div>
         <div class="progress-cc"><div style="width:${domPct}%"></div></div>
       </div>`;
     }).join('');
@@ -861,25 +896,7 @@ const StudentUI = {
   downloadReport(assessmentId){
     const a = Store.db().assessments.find(x=>x.id===assessmentId);
     const st = this.me();
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.setFont('helvetica','bold'); doc.setFontSize(18);
-    doc.text('Calm Compass — Stress Assessment Report', 14, 20);
-    doc.setFontSize(11); doc.setFont('helvetica','normal');
-    doc.text(`Student: ${st.name}  (${st.studentId})`, 14, 32);
-    doc.text(`Department: ${st.department}   Year: ${st.year}   Section: ${st.section}`, 14, 39);
-    doc.text(`Assessment date: ${a.date}`, 14, 46);
-    doc.setFontSize(14); doc.setFont('helvetica','bold');
-    doc.text(`Score: ${a.totalScore} / 80   Category: ${a.category}   Risk: ${Math.round(a.totalScore/80*100)}%`, 14, 58);
-    doc.setFontSize(11); doc.setFont('helvetica','bold');
-    doc.text('Recommendations:', 14, 70);
-    doc.setFont('helvetica','normal');
-    let y = 77;
-    recommendationsFor(a.category).forEach(r=>{
-      const lines = doc.splitTextToSize('• '+r, 180);
-      doc.text(lines, 14, y); y += lines.length*6;
-    });
-    doc.save(`stress-report-${st.studentId}-${a.date}.pdf`);
+    generateReportPdf(st, a);
     toast('Report downloaded.','success');
   },
   renderHistory(){
@@ -908,19 +925,21 @@ const StudentUI = {
   renderRecs(){
     const st = this.me();
     const db = Store.db();
-    const myAids = db.assessments.filter(a=>a.studentId===st.id).map(a=>a.id);
-    const recs = db.recommendations.filter(r=>myAids.includes(r.assessmentId)).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+    // Match on studentId (not assessmentId) so a recommendation sent BEFORE a
+    // student's first check-in (assessmentId falls back to a placeholder) still
+    // shows up here.
+    const recs = db.recommendations.filter(r=>r.studentId===st.id).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
     document.getElementById('s-recs').innerHTML = `
       <h4 class="font-display mb-3">Counselor recommendations</h4>
       ${recs.length ? recs.map(r=>{
         const t = db.teachers.find(x=>x.id===r.teacherId);
-        return `<div class="card-cc mb-3"><div class="d-flex justify-content-between"><strong>${t?t.name:'Counselor'}</strong><span class="small text-muted">${r.createdAt}</span></div><p class="mb-0 mt-2">${escapeHtml(r.text)}</p></div>`;
+        return `<div class="card-cc mb-3"><div class="d-flex justify-content-between"><strong>${t?escapeHtml(t.name):'Counselor'}</strong><span class="small text-muted">${escapeHtml(r.createdAt)}</span></div><p class="mb-0 mt-2">${escapeHtml(r.text)}</p></div>`;
       }).join('') : `<div class="card-cc text-center text-muted py-4">No recommendations yet — they'll appear here once a teacher sends one.</div>`}
     `;
   },
   renderProfile(){
     const st = this.me();
-    fillDeptSelect('profDeptSelect');
+    const eName = escapeHtml(st.name), eEmail = escapeHtml(st.email), eMobile = escapeHtml(st.mobile);
     document.getElementById('s-profile').innerHTML = `
       <h4 class="font-display mb-3">Your profile</h4>
       <div class="card-cc" style="max-width:600px;">
@@ -933,9 +952,9 @@ const StudentUI = {
         </div>
         <form onsubmit="return StudentUI.saveProfile(event)">
           <div class="row g-2">
-            <div class="col-md-6"><label class="form-label small fw-bold">Name</label><input class="form-control form-control-cc" id="profName" value="${st.name}" required></div>
-            <div class="col-md-6"><label class="form-label small fw-bold">Email</label><input type="email" class="form-control form-control-cc" id="profEmail" value="${st.email}" required></div>
-            <div class="col-md-6"><label class="form-label small fw-bold">Phone</label><input class="form-control form-control-cc" id="profPhone" value="${st.mobile}" required></div>
+            <div class="col-md-6"><label class="form-label small fw-bold">Name</label><input class="form-control form-control-cc" id="profName" value="${eName}" required></div>
+            <div class="col-md-6"><label class="form-label small fw-bold">Email</label><input type="email" class="form-control form-control-cc" id="profEmail" value="${eEmail}" required></div>
+            <div class="col-md-6"><label class="form-label small fw-bold">Phone</label><input class="form-control form-control-cc" id="profPhone" value="${eMobile}" required></div>
             <div class="col-md-6"><label class="form-label small fw-bold">Department</label><select class="form-select form-select-cc" id="profDeptSelect"></select></div>
             <div class="col-md-6">
               <label class="form-label small fw-bold">Year</label>
@@ -949,7 +968,12 @@ const StudentUI = {
         </form>
       </div>
     `;
-    setTimeout(()=>{ const sel = document.getElementById('profDeptSelect'); if(sel) sel.value = st.department; }, 0);
+    // Populate the dropdown AFTER the select element exists (it is created by
+    // the innerHTML above). Previously fillDeptSelect() ran first and no-oped,
+    // so the dropdown was empty and saving the profile erased the department.
+    fillDeptSelect('profDeptSelect');
+    const sel = document.getElementById('profDeptSelect');
+    if(sel && st.department) sel.value = st.department;
     addPwToggle('profPw');
   },
   _pendingPhoto: null,
@@ -1048,10 +1072,10 @@ const TeacherUI = {
     return list.map(s=>{
       const l = this.latestFor(s.id);
       return `<tr>
-        <td>${s.studentId}</td><td>${s.name}</td><td>${s.department}</td><td>${s.year}</td>
+        <td>${escapeHtml(s.studentId)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.department)}</td><td>${escapeHtml(s.year)}</td>
         <td>${l?l.totalScore:'—'}</td>
         <td>${l?`<span class="chip ${chipClass(l.category)}">${l.category}</span>`:'<span class="text-muted small">No data</span>'}</td>
-        <td><button class="btn btn-sm btn-cc-outline" onclick="TeacherUI.openStudent('${s.id}')">View</button></td>
+        <td><button class="btn btn-sm btn-cc-outline" onclick="TeacherUI.openStudent('${escapeHtml(s.id)}')">View</button></td>
       </tr>`;
     }).join('') || `<tr><td colspan="7" class="text-center text-muted py-3">No students yet.</td></tr>`;
   },
@@ -1078,18 +1102,18 @@ const TeacherUI = {
     const st = db.students.find(x=>x.id===this.selectedStudentId);
     if(!st){ document.getElementById('t-student-detail').innerHTML = '<div class="text-muted">Select a student from the Students tab.</div>'; return; }
     const mine = db.assessments.filter(a=>a.studentId===st.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
-    const recs = db.recommendations.filter(r=>mine.map(m=>m.id).includes(r.assessmentId)).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+    const recs = db.recommendations.filter(r=>r.studentId===st.id).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
     document.getElementById('t-student-detail').innerHTML = `
       <button class="btn btn-sm btn-cc-outline mb-3" onclick="TeacherUI.tab('t-students', document.querySelector('[data-tab=t-students]'))"><i class="fa-solid fa-arrow-left me-1"></i>Back to students</button>
       <div class="row g-3">
         <div class="col-lg-4">
           <div class="card-cc text-center">
             <img src="${st.photo || 'https://api.dicebear.com/7.x/initials/svg?seed='+encodeURIComponent(st.name)}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">
-            <h5 class="mt-2 mb-0">${st.name}</h5>
-            <div class="text-muted small">${st.studentId} · ${st.department}</div>
-            <div class="text-muted small">${st.year} · Section ${st.section}</div>
-            <div class="text-muted small">${st.email} · ${st.mobile}</div>
-            <button class="btn btn-sm btn-cc-primary mt-3" onclick="StudentUI.downloadReport.call(TeacherUI, '${mine[0]?mine[0].id:''}')" ${mine.length?'':'disabled'}>Download latest report</button>
+            <h5 class="mt-2 mb-0">${escapeHtml(st.name)}</h5>
+            <div class="text-muted small">${escapeHtml(st.studentId)} · ${escapeHtml(st.department)}</div>
+            <div class="text-muted small">${escapeHtml(st.year)} · Section ${escapeHtml(st.section)}</div>
+            <div class="text-muted small">${escapeHtml(st.email)} · ${escapeHtml(st.mobile)}</div>
+            <button class="btn btn-sm btn-cc-primary mt-3" onclick="TeacherUI.downloadReport('${mine[0]?mine[0].id:''}')" ${mine.length?'':'disabled'}>Download latest report</button>
           </div>
           <div class="card-cc mt-3">
             <h6 class="fw-bold">Send recommendation</h6>
@@ -1133,6 +1157,18 @@ const TeacherUI = {
     Store.save(db);
     toast('Recommendation sent.','success');
     this.renderStudentDetail();
+  },
+  /** Fixes the old onClick that called StudentUI.downloadReport.call(...)
+   *  — TeacherUI has no me(), so that threw "this.me is not a function". */
+  downloadReport(assessmentId){
+    const db = Store.db();
+    const st = db.students.find(x=>x.id===this.selectedStudentId);
+    const a = db.assessments.find(x=>x.id===assessmentId);
+    if(!st || !a){ toast('No report available for this student yet.','warning'); return; }
+    generateReportPdf(st, a);
+    logAudit(db, 'teacher', (db.teachers.find(x=>x.id===Store.session().id)||{}).name || 'Teacher', 'Downloaded student stress report', `${st.name} (${st.studentId})`);
+    Store.save(db);
+    toast('Report downloaded.','success');
   }
 };
 
@@ -1179,7 +1215,7 @@ const AdminUI = {
         <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Student</th><th>Date</th><th>Score</th><th>Level</th></tr></thead>
         <tbody>${[...db.assessments].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8).map(a=>{
           const st = db.students.find(s=>s.id===a.studentId);
-          return `<tr><td>${st?st.name:'—'}</td><td>${a.date}</td><td>${a.totalScore}</td><td><span class="chip ${chipClass(a.category)}">${a.category}</span></td></tr>`;
+          return `<tr><td>${st?escapeHtml(st.name):'—'}</td><td>${a.date}</td><td>${a.totalScore}</td><td><span class="chip ${chipClass(a.category)}">${a.category}</span></td></tr>`;
         }).join('') || '<tr><td colspan="4" class="text-muted text-center">No assessments yet.</td></tr>'}</tbody></table></div>
       </div>
     `;
@@ -1241,7 +1277,7 @@ const AdminUI = {
       <div class="table-responsive table-cc">
         <table class="table mb-0"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Department</th><th>Year</th><th></th></tr></thead>
         <tbody>${db.students.map(s=>`<tr>
-          <td>${s.studentId}</td><td>${s.name}</td><td>${s.email}</td><td>${s.department}</td><td>${s.year}</td>
+          <td>${escapeHtml(s.studentId)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.email)}</td><td>${escapeHtml(s.department)}</td><td>${escapeHtml(s.year)}</td>
           <td>
             <button class="btn btn-sm btn-cc-ghost" onclick="AdminUI.openStudentModal('${s.id}')"><i class="fa-solid fa-pen"></i></button>
             <button class="btn btn-sm btn-cc-ghost text-danger" onclick="AdminUI.deleteStudent('${s.id}')"><i class="fa-solid fa-trash"></i></button>
@@ -1310,6 +1346,7 @@ const AdminUI = {
     logAudit(db, 'admin', 'Admin', 'Deleted student account', st ? `${st.name} (${st.studentId})` : id);
     db.students = db.students.filter(s=>s.id!==id);
     db.assessments = db.assessments.filter(a=>a.studentId!==id);
+    db.recommendations = db.recommendations.filter(r=>r.studentId!==id);
     Store.save(db);
     this.renderStudents();
     toast('Student removed.','primary');
@@ -1345,7 +1382,7 @@ const AdminUI = {
     document.getElementById('teachersTableWrap').innerHTML = `
       <div class="table-responsive table-cc">
         <table class="table mb-0"><thead><tr><th>Name</th><th>Email</th><th></th></tr></thead>
-        <tbody>${db.teachers.map(t=>`<tr><td>${t.name}</td><td>${t.email}</td><td>
+        <tbody>${db.teachers.map(t=>`<tr><td>${escapeHtml(t.name)}</td><td>${escapeHtml(t.email)}</td><td>
           <button class="btn btn-sm btn-cc-ghost" onclick="AdminUI.openTeacherModal('${t.id}')"><i class="fa-solid fa-pen"></i></button>
           <button class="btn btn-sm btn-cc-ghost text-danger" onclick="AdminUI.deleteTeacher('${t.id}')"><i class="fa-solid fa-trash"></i></button>
         </td></tr>`).join('') || '<tr><td colspan="3" class="text-center text-muted py-3">No teachers yet.</td></tr>'}</tbody></table>
@@ -1410,7 +1447,7 @@ const AdminUI = {
       </div>
       <div class="table-responsive table-cc" style="max-width:500px;">
         <table class="table mb-0"><thead><tr><th>Department</th><th></th></tr></thead>
-        <tbody>${db.departments.map(d=>`<tr><td>${d.name}</td><td><button class="btn btn-sm btn-cc-ghost text-danger" onclick="AdminUI.deleteDept('${d.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')}</tbody></table>
+        <tbody>${db.departments.map(d=>`<tr><td>${escapeHtml(d.name)}</td><td><button class="btn btn-sm btn-cc-ghost text-danger" onclick="AdminUI.deleteDept('${d.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')}</tbody></table>
       </div>
     `;
   },
@@ -1443,7 +1480,7 @@ const AdminUI = {
       </div>
       <div class="table-responsive table-cc">
         <table class="table mb-0"><thead><tr><th>#</th><th>Question</th><th></th></tr></thead>
-        <tbody>${db.questions.map((q,i)=>`<tr><td>${i+1}</td><td>${q.text}</td><td><button class="btn btn-sm btn-cc-ghost text-danger" onclick="AdminUI.deleteQuestion('${q.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')}</tbody></table>
+        <tbody>${db.questions.map((q,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(q.text)}</td><td><button class="btn btn-sm btn-cc-ghost text-danger" onclick="AdminUI.deleteQuestion('${q.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')}</tbody></table>
       </div>
     `;
   },
@@ -1451,7 +1488,9 @@ const AdminUI = {
     const text = document.getElementById('newQuestionText').value.trim();
     if(!text) return;
     const db = Store.db();
-    db.questions.push({id:uid('q'), text});
+    // Give every new question an explicit domain so scoring/breakdowns work
+    // the same way as the 20 seeded items.
+    db.questions.push({id:uid('q'), text, domain:'General'});
     Store.save(db);
     this.renderQuestions();
     toast('Question added.','success');
@@ -1614,10 +1653,10 @@ const AdminUI = {
       const sensitive = /viewed student detail|deletion|restored database|deleted/i.test(e.action);
       return `<tr class="${sensitive?'audit-row-sensitive':''}">
         <td class="small font-mono">${new Date(e.at).toLocaleString()}</td>
-        <td class="small text-capitalize">${e.actorRole}</td>
-        <td class="small">${e.actorLabel}</td>
-        <td class="small">${e.action}</td>
-        <td class="small text-muted">${e.detail || ''}</td>
+        <td class="small text-capitalize">${escapeHtml(e.actorRole)}</td>
+        <td class="small">${escapeHtml(e.actorLabel)}</td>
+        <td class="small">${escapeHtml(e.action)}</td>
+        <td class="small text-muted">${escapeHtml(e.detail || '')}</td>
       </tr>`;
     }).join('') || `<tr><td colspan="5" class="text-center text-muted py-3">No sensitive access has been logged yet.</td></tr>`;
     document.getElementById('a-audit').innerHTML = `
