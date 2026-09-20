@@ -273,18 +273,23 @@ const Store = {
   }
 };
 
-function categoryFor(score){
-  // score expected 0-80 (20 questions * 0-4)
-  if(score <= 20) return 'Low';
-  if(score <= 40) return 'Moderate';
-  if(score <= 60) return 'High';
+function categoryFor(score, max){
+  // Four proportional bands (25% / 50% / 75% of max). Defaults to the classic
+  // 0–80 model (20 questions) and scales if the admin changes question count.
+  max = max || 80;
+  if(score <= max*0.25) return 'Low';
+  if(score <= max*0.5) return 'Moderate';
+  if(score <= max*0.75) return 'High';
   return 'Very High';
 }
 function chipClass(cat){
   return {Low:'chip-low', Moderate:'chip-mod', High:'chip-high', 'Very High':'chip-vhigh'}[cat] || 'chip-low';
 }
-function categoryColor(cat){
-  return {Low:'#16A34A', Moderate:'#D97706', High:'#EA580C', 'Very High':'#DC2626'}[cat] || '#16A34A';
+/** Current max possible score = number of questions × 4 (each scores 0–4).
+ *  20 seeded questions → 80, and it adjusts automatically if an admin
+ *  adds or removes questions. */
+function maxScore(){
+  return Store.db().questions.length * 4;
 }
 function recommendationsFor(cat){
   const map = {
@@ -657,7 +662,9 @@ function generateReportPdf(st, a){
   doc.text(`Department: ${st.department}   Year: ${st.year}   Section: ${st.section}`, 14, 39);
   doc.text(`Assessment date: ${a.date}`, 14, 46);
   doc.setFontSize(14); doc.setFont('helvetica','bold');
-  doc.text(`Score: ${a.totalScore} / 80   Category: ${a.category}   Risk: ${Math.round(a.totalScore/80*100)}%`, 14, 58);
+  const mx = maxScore();
+  const risk = mx ? Math.round(a.totalScore/mx*100) : 0;
+  doc.text(`Score: ${a.totalScore} / ${mx}   Category: ${a.category}   Risk: ${risk}%`, 14, 58);
   doc.setFontSize(11); doc.setFont('helvetica','bold');
   doc.text('Recommendations:', 14, 70);
   doc.setFont('helvetica','normal');
@@ -735,7 +742,7 @@ const StudentUI = {
     new Chart(ctx, {
       type:'line',
       data:{ labels: ordered.map(a=>a.date), datasets:[{ label:'Stress score', data: ordered.map(a=>a.totalScore), borderColor:'#0D9488', backgroundColor:'rgba(13,148,136,.18)', fill:true, tension:.35 }] },
-      options:{ plugins:{legend:{display:false}}, scales:{ y:{ min:0, max:80 } } }
+      options:{ plugins:{legend:{display:false}}, scales:{ y:{ min:0, max:maxScore() || 80 } } }
     });
   },
   renderAssessment(){
@@ -795,7 +802,7 @@ const StudentUI = {
       return;
     }
     const total = Object.values(this.currentAnswers).reduce((a,b)=>a+b,0);
-    const cat = categoryFor(total);
+    const cat = categoryFor(total, db.questions.length*4);
     const st = this.me();
     const domainTotals = {};
     db.questions.forEach(q=>{
@@ -822,7 +829,8 @@ const StudentUI = {
     const mine = db.assessments.filter(x=>x.studentId===st.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
     const a = mine.find(x=>x.id===assessmentId);
     const prior = mine.find(x=>x.id!==assessmentId); // most recent OTHER assessment
-    const pct = Math.round(a.totalScore/80*100);
+    const mx = maxScore();
+    const pct = mx ? Math.round(a.totalScore/mx*100) : 0;
     const recs = recommendationsFor(a.category);
     const explain = {
       Low: "Your answers this week point to a manageable, steady load — the kind most students carry without much strain.",
@@ -835,7 +843,7 @@ const StudentUI = {
       const diff = a.totalScore - prior.totalScore;
       const dir = diff === 0 ? 'the same as' : (diff > 0 ? 'higher than' : 'lower than');
       const icon = diff === 0 ? 'fa-minus' : (diff > 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down');
-      trendHtml = `<p class="small mb-0"><i class="fa-solid ${icon} me-1" aria-hidden="true"></i>Your score is <strong>${Math.abs(diff)} points ${dir}</strong> your previous check-in on ${prior.date} (${prior.totalScore}/80, ${prior.category}).</p>`;
+      trendHtml = `<p class="small mb-0"><i class="fa-solid ${icon} me-1" aria-hidden="true"></i>Your score is <strong>${Math.abs(diff)} points ${dir}</strong> your previous check-in on ${prior.date} (${prior.totalScore}/${mx}, ${prior.category}).</p>`;
     }
     // Per-domain max = (number of questions in that domain) × 4, so the bars
     // stay accurate even if an admin adds/removes questions or uses "General".
@@ -847,8 +855,8 @@ const StudentUI = {
     });
     const domainRows = domKeys.map(d=>{
       const v = (a.domainTotals && a.domainTotals[d]) || 0;
-      const max = (domainMax[d] || 0) * 4;
-      const domPct = max ? Math.round(v/max*100) : 0;
+      const max = Math.max((domainMax[d] || 0) * 4, 1);
+      const domPct = Math.round(v/max*100);
       return `<div class="mb-2">
         <div class="d-flex justify-content-between small"><span>${escapeHtml(d)}</span><span class="font-mono">${v}/${max}</span></div>
         <div class="progress-cc"><div style="width:${domPct}%"></div></div>
@@ -860,7 +868,7 @@ const StudentUI = {
         <div class="d-flex justify-content-between flex-wrap gap-3 align-items-start">
           <div>
             <div class="text-muted small">Your result</div>
-            <h2 class="font-display mb-0">${a.totalScore} <span class="fs-6 text-muted">/ 80</span></h2>
+            <h2 class="font-display mb-0">${a.totalScore} <span class="fs-6 text-muted">/ ${mx}</span></h2>
             <span class="chip ${chipClass(a.category)} mt-2 d-inline-block">${a.category} stress band</span>
           </div>
           <div class="text-end">
@@ -1144,7 +1152,7 @@ const TeacherUI = {
       </div>
     `;
     const ordered = [...mine].reverse();
-    new Chart(document.getElementById('teacherStudentTrend'), {type:'line', data:{labels:ordered.map(a=>a.date), datasets:[{data:ordered.map(a=>a.totalScore), borderColor:'#0D9488', backgroundColor:'rgba(13,148,136,.18)', fill:true, tension:.35}]}, options:{plugins:{legend:{display:false}}, scales:{y:{min:0,max:80}}}});
+    new Chart(document.getElementById('teacherStudentTrend'), {type:'line', data:{labels:ordered.map(a=>a.date), datasets:[{data:ordered.map(a=>a.totalScore), borderColor:'#0D9488', backgroundColor:'rgba(13,148,136,.18)', fill:true, tension:.35}]}, options:{plugins:{legend:{display:false}}, scales:{y:{min:0,max:maxScore() || 80}}}});
   },
   sendRecommendation(){
     const text = document.getElementById('teacherRecText').value.trim();
@@ -1476,7 +1484,7 @@ const AdminUI = {
           <input class="form-control form-control-cc" id="newQuestionText" placeholder="Add a new question...">
           <button class="btn-cc-primary" onclick="AdminUI.addQuestion()">Add</button>
         </div>
-        <div class="small text-muted mt-2">Scoring assumes 20 questions on a 0–4 scale (max 80). Adding/removing questions changes the effective max score.</div>
+        <div class="small text-muted mt-2">Each question scores 0–4. The maximum score adjusts automatically with the question count (currently ${maxScore()}).</div>
       </div>
       <div class="table-responsive table-cc">
         <table class="table mb-0"><thead><tr><th>#</th><th>Question</th><th></th></tr></thead>
