@@ -13,7 +13,7 @@ const SESSION_KEY = 'ssm_session_v1';
    this file directly.
    ========================================================= */
 const CONFIG = {
-  supportEmail: (window.CALM_COMPASS_SUPPORT_EMAIL || 'support@calmcompass.example'),
+  supportEmail: (window.CALM_COMPASS_SUPPORT_EMAIL || 'swayampakulasurya88@gmail.com'),
   institutionName: (window.CALM_COMPASS_INSTITUTION || 'your institution'),
 };
 
@@ -1711,7 +1711,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const emailLink = document.getElementById('contactEmailLink');
   if(emailLink){ emailLink.href = 'mailto:' + CONFIG.supportEmail; emailLink.textContent = CONFIG.supportEmail; }
-  ['aboutEmailLink','privacyEmailLink'].forEach(id=>{
+  ['aboutEmailLink','privacyEmailLink','loginEmailLink'].forEach(id=>{
     const el = document.getElementById(id);
     if(el){ el.href = 'mailto:' + CONFIG.supportEmail; el.textContent = CONFIG.supportEmail; }
   });
